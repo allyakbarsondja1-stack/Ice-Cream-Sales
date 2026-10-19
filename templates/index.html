@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prediksi Penjualan Es Krim</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background: linear-gradient(135deg, #fff8e1, #fce4ec 100%);
+        color: #333;
+      }
+      .hero {
+        background: linear-gradient(135deg, #ffb3c6, #ffd166);
+        border-radius: 20px;
+        padding: 2rem;
+      }
+      .card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      }
+      .metric-box {
+        background: #fffaf0;
+        border-left: 5px solid #ff7f50;
+      }
+      .result-badge {
+        background: linear-gradient(135deg, #ff7f50, #ffb703);
+        color: white;
+        border-radius: 12px;
+        font-weight: 600;
+      }
+      img {
+        border-radius: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container py-5">
+      <div class="hero mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <div>
+            <p class="text-uppercase fw-bold mb-2 text-dark">Machine Learning • Regresi Linear Sederhana</p>
+            <h1 class="mb-0">Prediksi Pendapatan Penjualan Es Krim</h1>
+          </div>
+          <span class="badge bg-light text-dark px-3 py-2 fs-6 rounded-pill">Suhu → Pendapatan</span>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-lg-5">
+          <div class="card p-4">
+            <h2 class="h4 mb-3">Prediksi Hari Ini</h2>
+            <form method="POST" action="/">
+              <div class="mb-3">
+                <label for="temperature" class="form-label fw-semibold">Masukkan Suhu Udara (°C)</label>
+                <input
+                  type="number"
+                  class="form-control form-control-lg"
+                  id="temperature"
+                  name="temperature"
+                  step="0.1"
+                  min="0"
+                  max="45"
+                  required
+                  value="{{ temperature_value }}"
+                />
+              </div>
+              <button type="submit" class="btn btn-primary btn-lg w-100">Prediksi Pendapatan</button>
+            </form>
+
+            {% if error_message %}
+            <div class="alert alert-danger mt-3 mb-0" role="alert">
+              {{ error_message }}
+            </div>
+            {% endif %}
+
+            {% if warning_message %}
+            <div class="alert alert-warning mt-3 mb-0" role="alert">
+              {{ warning_message }}
+            </div>
+            {% endif %}
+
+            {% if prediction is not none %}
+            <div class="result-badge p-3 mt-4 text-center">
+              Estimasi Pendapatan Penjualan Es Krim: $ {{ "%.2f"|format(prediction) }}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="col-lg-7">
+          <div class="card p-4">
+            <h2 class="h4 mb-3">Studi Kasus</h2>
+            <p>
+              Penjual es krim ingin mengetahui seberapa besar suhu udara memengaruhi pendapatan harian.
+              Dengan model regresi linear sederhana, dibuat perkiraan pendapatan berdasarkan temperatur,
+              sehingga stok dan persediaan dapat disesuaikan sebelum cuaca panas tiba.
+            </p>
+            <p class="mb-0">
+              Dataset yang digunakan berisi data suhu dan pendapatan harian, dengan hanya satu fitur numerik
+              sebagai variabel bebas dan satu target numerik sebagai variabel terikat.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card p-4 mt-4">
+        <h2 class="h4 mb-3">Performa Model</h2>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="metric-box card p-3 h-100">
+              <small class="text-muted">R²</small>
+              <h3 class="mb-0">{{ metrics.r2 | round(4) }}</h3>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="metric-box card p-3 h-100">
+              <small class="text-muted">RMSE</small>
+              <h3 class="mb-0">{{ metrics.rmse | round(2) }}</h3>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="metric-box card p-3 h-100">
+              <small class="text-muted">MAE</small>
+              <h3 class="mb-0">{{ metrics.mae | round(2) }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card p-4 mt-4">
+        <h2 class="h4 mb-3">Persamaan Model</h2>
+        <p class="lead mb-2">
+          Revenue = {{ metrics.intercept | round(2) }} + ({{ metrics.coef | round(2) }} × Temperature)
+        </p>
+        <p class="mb-0 text-muted">
+          Di mana <strong>Temperature</strong> dalam °C dan <strong>Revenue</strong> dalam USD.
+        </p>
+      </div>
+
+      <div class="card p-4 mt-4">
+        <h2 class="h4 mb-3">Interpretasi Model</h2>
+        <ul class="mb-0">
+          <li>
+            <strong>Koefisien suhu:</strong> setiap peningkatan 1°C diperkirakan meningkatkan pendapatan
+            sekitar $ {{ metrics.coef | round(2) }} untuk setiap unit suhu.
+          </li>
+          <li>
+            <strong>Intercept:</strong> saat suhu 0°C, model memprediksi pendapatan sekitar $ {{ metrics.intercept | round(2) }}.
+            Nilai ini membantu memahami tren dasar, namun perlu diinterpretasikan dengan hati-hati karena
+            pada suhu dingin penjualan es krim cenderung turun.
+          </li>
+          <li>
+            <strong>RMSE:</strong> selisih rata-rata prediksi dengan data aktual sekitar $ {{ metrics.rmse | round(2) }}.
+          </li>
+        </ul>
+      </div>
+
+      <div class="card p-4 mt-4">
+        <h2 class="h4 mb-3">Visualisasi Analisis</h2>
+        <div class="row g-4">
+          <div class="col-md-6">
+            <img src="{{ url_for('static', filename='img/scatter_plot.png') }}" class="img-fluid w-100" alt="Scatter plot suhu vs pendapatan" />
+          </div>
+          <div class="col-md-6">
+            <img src="{{ url_for('static', filename='img/regression_line.png') }}" class="img-fluid w-100" alt="Garis regresi suhu vs pendapatan" />
+          </div>
+        </div>
+      </div>
+
+      <footer class="mt-5 mb-3 text-center text-muted small">
+        Catatan keterbatasan: model ini hanya menggunakan satu fitur (suhu) dan mengandalkan dataset publik dari Kaggle,
+        sehingga hasil prediksi belum memperhitungkan faktor lain seperti hari libur, promo, cuaca ekstrem, lokasi, atau variasi pasar.
+      </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
